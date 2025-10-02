@@ -1,14 +1,16 @@
 ﻿using DocuScan.Comparer;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 
 namespace DocuScan
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        private DirectoryCompare _comparer = new DirectoryCompare();
+        private CancellationTokenSource _cancellationTokenSource;
+        private ObservableCollection<CompareResult> _liveResults = new();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -28,7 +30,7 @@ namespace DocuScan
                 Dir2TextBox.Text = dialog.SelectedPath;
         }
 
-        private void Compare_Click(object sender, RoutedEventArgs e)
+        private async void Compare_Click(object sender, RoutedEventArgs e)
         {
             var dir1 = Dir1TextBox.Text;
             var dir2 = Dir2TextBox.Text;
@@ -39,30 +41,60 @@ namespace DocuScan
                 return;
             }
 
-            var files1 = Directory.GetFiles(dir1).Select(System.IO.Path.GetFileName).ToHashSet();
-            var files2 = Directory.GetFiles(dir2).Select(System.IO.Path.GetFileName).ToHashSet();
+            EnableUI(false); // Disable Compare button
+            _cancellationTokenSource = new CancellationTokenSource();
+            CompareProgressBar.Value = 0;
+            ProgressText.Text = "0.0%";
+            _liveResults.Clear();
+            ResultsGrid.ItemsSource = _liveResults;
 
-            var allFiles = files1.Union(files2);
-            var results = new List<CompareResult>();
-
-            foreach (var file in allFiles)
+            try
             {
-                string status;
-                if (files1.Contains(file) && files2.Contains(file))
+                await Task.Run(() =>
                 {
-                    var hash1 = File.ReadAllBytes(System.IO.Path.Combine(dir1, file));
-                    var hash2 = File.ReadAllBytes(System.IO.Path.Combine(dir2, file));
-                    status = hash1.SequenceEqual(hash2) ? "Same" : "Different";
-                }
-                else if (files1.Contains(file))
-                    status = "Only in Dir1";
-                else
-                    status = "Only in Dir2";
-
-                results.Add(new CompareResult { FileName = file, Status = status });
+                    _comparer.Compare(dir1, dir2, ReportProgress,
+                        result =>
+                        {
+                            Dispatcher.Invoke(() => _liveResults.Add(result));
+                        },
+                        _cancellationTokenSource.Token);
+                });
             }
-
-            ResultsGrid.ItemsSource = results;
+            catch (OperationCanceledException)
+            {
+                System.Windows.MessageBox.Show("Comparison stopped by user.");
+            }
+            finally
+            {
+                EnableUI(true); // Re-enable Compare button
+                _cancellationTokenSource = null;
+            }
         }
+
+        private void ReportProgress(int processed, int total)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                double percent = (double)processed / total * 100;
+                CompareProgressBar.Value = percent;
+                ProgressText.Text = $"{percent:F2}%";
+            });
+        }
+
+        private void StopCompare_Click(object sender, RoutedEventArgs e)
+        {
+            _cancellationTokenSource?.Cancel();
+            EnableUI(true);
+        }
+
+        private void EnableUI(bool enable)
+        {
+            Dir1Button.IsEnabled = enable;
+            Dir1TextBox.IsEnabled = enable; 
+            Dir2Button.IsEnabled = enable;
+            Dir2TextBox.IsEnabled = enable;
+            CompareButton.IsEnabled = enable;
+        }
+
     }
 }
