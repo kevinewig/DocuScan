@@ -52,12 +52,7 @@ namespace DocuScan
             {
                 await Task.Run(() =>
                 {
-                    _comparer.Compare(dir1, dir2, ReportProgress,
-                        result =>
-                        {
-                            Dispatcher.Invoke(() => _liveResults.Add(result));
-                        },
-                        _cancellationTokenSource.Token);
+                    _comparer.Compare(dir1, dir2, ReportProgress, UpdateResult, _cancellationTokenSource.Token);
                 });
             }
             catch (OperationCanceledException)
@@ -69,6 +64,11 @@ namespace DocuScan
                 EnableUI(true); // Re-enable Compare button
                 _cancellationTokenSource = null;
             }
+        }
+
+        private void UpdateResult(CompareResult result)
+        {
+            Dispatcher.Invoke(() => _liveResults.Add(result));
         }
 
         private void ReportProgress(int processed, int total)
