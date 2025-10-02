@@ -1,0 +1,34 @@
+﻿<Window x:Class="DocuScan.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="File Comparison" Height="600" Width="900">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Directory Inputs -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <Label Content="Directory 1:" VerticalAlignment="Center"/>
+            <TextBox x:Name="Dir1TextBox" Width="300" Margin="5"/>
+            <Button Content="Browse..." Click="BrowseDir1_Click" Margin="5" Width="65"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,10">
+            <Label Content="Directory 2:" VerticalAlignment="Center"/>
+            <TextBox x:Name="Dir2TextBox" Width="300" Margin="5"/>
+            <Button Content="Browse..." Click="BrowseDir2_Click" Margin="5" Width="65"/>
+            <Button Content="Compare" Click="Compare_Click" Height="22" Width="86"/>
+        </StackPanel>
+
+        <!-- Results Grid -->
+        <DataGrid x:Name="ResultsGrid" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="*"/>
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

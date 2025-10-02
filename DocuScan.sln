@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36408.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocuScan.Tests", "DocuScan.Tests\DocuScan.Tests.csproj", "{D568B06C-7A84-6718-ED65-75CEC36BC398}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocuScan", "DocuScan\DocuScan.csproj", "{8DFEFA47-2652-FE53-D3DC-D0AF876CA9E3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D568B06C-7A84-6718-ED65-75CEC36BC398}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D568B06C-7A84-6718-ED65-75CEC36BC398}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D568B06C-7A84-6718-ED65-75CEC36BC398}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D568B06C-7A84-6718-ED65-75CEC36BC398}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DFEFA47-2652-FE53-D3DC-D0AF876CA9E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DFEFA47-2652-FE53-D3DC-D0AF876CA9E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DFEFA47-2652-FE53-D3DC-D0AF876CA9E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DFEFA47-2652-FE53-D3DC-D0AF876CA9E3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8688E1E2-C482-4ADE-A26E-46E53568EE13}
+	EndGlobalSection
+EndGlobal
