@@ -43,6 +43,18 @@
     <None Update="Documents\SlightlyDifferent\hj_25_001_different.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="HtmlDocuments\Identical\LawFiles1005.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="HtmlDocuments\Identical\LawFilesTest1005.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="HtmlDocuments\SlightlyDifferent\1005.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="HtmlDocuments\SlightlyDifferent\1005_different.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="PdfDocuments\Identical\LawFiles 5583-S AMH ORCU LEWI 053.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
