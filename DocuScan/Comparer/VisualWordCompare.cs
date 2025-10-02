@@ -6,7 +6,7 @@ namespace DocuScan.Comparer
 {
     public class VisualWordCompare : VisualCompare
     {
-        public CompareResult AreVisuallyEqual(string wordPath1, string wordPath2)
+        public override CompareResult AreVisuallyEqual(string wordPath1, string wordPath2)
         {
             var doc1 = new Document(wordPath1);
             var doc2 = new Document(wordPath2);

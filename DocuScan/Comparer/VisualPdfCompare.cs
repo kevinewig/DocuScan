@@ -5,7 +5,7 @@ namespace DocuScan.Comparer
 {
     public class VisualPdfCompare : VisualCompare
     {
-        public CompareResult AreVisuallyEqual(string pdfPath1, string pdfPath2)
+        public override CompareResult AreVisuallyEqual(string pdfPath1, string pdfPath2)
         {
             var pdfDoc1 = new Document(pdfPath1);
             var pdfDoc2 = new Document(pdfPath2);
@@ -24,7 +24,6 @@ namespace DocuScan.Comparer
 
             for (int i = 1; i <= pdfDoc1.Pages.Count; i++)
             {
-
                 using var memoryStream1 = pdfDoc1.Pages[i].ConvertToPNGMemoryStream();
                 using var memoryStream2 = pdfDoc2.Pages[i].ConvertToPNGMemoryStream();
 

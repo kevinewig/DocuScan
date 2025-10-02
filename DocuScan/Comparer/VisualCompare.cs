@@ -2,7 +2,9 @@
 {
     public abstract class VisualCompare
     {
-        public bool CompareBitmaps(Bitmap bmp1, Bitmap bmp2)
+        public abstract CompareResult AreVisuallyEqual(string pdfPath1, string pdfPath2);
+
+        protected bool CompareBitmaps(Bitmap bmp1, Bitmap bmp2)
         {
             if (bmp1.Width != bmp2.Width || bmp1.Height != bmp2.Height)
                 return false;

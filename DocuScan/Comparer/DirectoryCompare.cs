@@ -17,6 +17,12 @@ namespace DocuScan.Comparer
                     break;
                 }
 
+                var comparer = VisualCompareFactory.GetVisualCompare(relPath);
+                if (comparer == null)
+                {
+                    continue;
+                }
+
                 string path1 = Path.Combine(directory1, relPath);
                 string path2 = Path.Combine(directory2, relPath);
 
@@ -25,10 +31,16 @@ namespace DocuScan.Comparer
 
                 if (File.Exists(path1) && File.Exists(path2))
                 {
-                    var bytes1 = File.ReadAllBytes(path1);
-                    var bytes2 = File.ReadAllBytes(path2);
-                    same = bytes1.SequenceEqual(bytes2);
-                    status = same ? "Same" : "Different";
+                    var compareResult = comparer.AreVisuallyEqual(path1, path2);
+                    if (compareResult == null)
+                    {
+                        status = "Error comparing files";
+                    }
+                    else
+                    {
+                        status = compareResult.Status;
+                        same = compareResult.Same;
+                    }
                 }
                 else if (File.Exists(path1))
                 {
