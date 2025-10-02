@@ -10,21 +10,28 @@ namespace DocuScan.Comparer
             int total = allPaths.Count;
             int processed = 0;
 
-            foreach (var relPath in allPaths)
+            var options = new ParallelOptions
             {
+                CancellationToken = token,
+                MaxDegreeOfParallelism = Environment.ProcessorCount // or customize
+            };
+
+
+            Parallel.ForEach(allPaths, options, (relPath, state) => { 
+               
                 if (token.IsCancellationRequested)
                 {
-                    break;
+                    state.Stop(); 
+                }
+
+                if (!VisualCompareFactory.IsSupportedFileType(relPath))
+                {
+                    return;
                 }
 
                 var comparer = VisualCompareFactory.GetVisualCompare(relPath);
-                if (comparer == null)
-                {
-                    continue;
-                }
-
-                string path1 = Path.Combine(directory1, relPath);
-                string path2 = Path.Combine(directory2, relPath);
+                var path1 = Path.Combine(directory1, relPath);
+                var path2 = Path.Combine(directory2, relPath);
 
                 string status;
                 bool same = false;
@@ -52,13 +59,17 @@ namespace DocuScan.Comparer
                 }
 
                 var result = new CompareResult { FileName = relPath, Status = status, Same = same };
+
+                // Thread-safe UI update
                 reportResult(result);
 
-                processed++;
-                reportProgress(processed, total);
-            }
-        }
+                // Thread-safe progress update
+                int current = Interlocked.Increment(ref processed);
+                reportProgress(current, total);
 
+            });
+
+        }
 
         private List<string> GetAllRelativePaths(string dir1, string dir2)
         {

@@ -2,6 +2,12 @@
 {
     internal static class VisualCompareFactory
     {
+        public static bool IsSupportedFileType(string filePath)
+        {
+            var extension = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
+            return extension == ".pdf" || extension == ".docx";
+        }
+
         public static VisualCompare GetVisualCompare(string filePath)
         {
             var extension = System.IO.Path.GetExtension(filePath).ToLowerInvariant();

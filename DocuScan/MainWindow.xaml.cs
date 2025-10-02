@@ -10,6 +10,7 @@ namespace DocuScan
         private DirectoryCompare _comparer = new DirectoryCompare();
         private CancellationTokenSource _cancellationTokenSource;
         private ObservableCollection<CompareResult> _liveResults = new();
+        private DateTime _startTime;
 
         public MainWindow()
         {
@@ -41,10 +42,20 @@ namespace DocuScan
                 return;
             }
 
-            EnableUI(false); // Disable Compare button
+            // Disable Compare button
+            EnableUI(false);
+
+            // Initialize cancellation token
             _cancellationTokenSource = new CancellationTokenSource();
+
+            // Set progress bar and text
             CompareProgressBar.Value = 0;
             ProgressText.Text = "0.0%";
+
+            // Set the time the comparison started
+            _startTime = DateTime.Now;
+
+            // Clear previous results on the data grid.
             _liveResults.Clear();
             ResultsGrid.ItemsSource = _liveResults;
 
@@ -61,29 +72,55 @@ namespace DocuScan
             }
             finally
             {
-                EnableUI(true); // Re-enable Compare button
+                EnableUI(true);  
                 _cancellationTokenSource = null;
             }
         }
 
         private void UpdateResult(CompareResult result)
         {
-            Dispatcher.Invoke(() => _liveResults.Add(result));
+            Dispatcher.Invoke(() =>
+            {
+                if (_cancellationTokenSource.IsCancellationRequested)
+                {
+                    return;
+                }
+                _liveResults.Add(result);
+            });
         }
 
         private void ReportProgress(int processed, int total)
         {
             Dispatcher.Invoke(() =>
             {
+
+                if (_cancellationTokenSource.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 double percent = (double)processed / total * 100;
                 CompareProgressBar.Value = percent;
-                ProgressText.Text = $"{percent:F2}%";
+
+                if (processed > 0)
+                {
+                    var elapsed = DateTime.Now - _startTime;
+                    double estimatedTotalSeconds = elapsed.TotalSeconds / processed * total;
+                    var remaining = TimeSpan.FromSeconds(estimatedTotalSeconds - elapsed.TotalSeconds);
+
+                    ProgressText.Text = $"complete: {percent:F2}% time left: {remaining.Hours}h {remaining.Minutes}m";
+                }
+                else
+                {
+                    ProgressText.Text = $"complete: {percent:F2}%";
+                }
             });
         }
 
         private void StopCompare_Click(object sender, RoutedEventArgs e)
         {
             _cancellationTokenSource?.Cancel();
+            ProgressText.Text = "";
             EnableUI(true);
         }
 

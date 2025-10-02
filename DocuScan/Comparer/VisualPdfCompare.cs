@@ -22,27 +22,38 @@ namespace DocuScan.Comparer
             Resolution resolution = new Resolution(300);
             PngDevice pngDevice = new PngDevice(resolution);
 
-            for (int i = 1; i <= pdfDoc1.Pages.Count; i++)
+            try
             {
-                using var memoryStream1 = pdfDoc1.Pages[i].ConvertToPNGMemoryStream();
-                using var memoryStream2 = pdfDoc2.Pages[i].ConvertToPNGMemoryStream();
-
-                pngDevice.Process(pdfDoc1.Pages[i], memoryStream1);
-                pngDevice.Process(pdfDoc2.Pages[i], memoryStream2);
-                                                             
-                using var bitmap1 = new Bitmap(memoryStream1);                               
-                using var bitmap2 = new Bitmap(memoryStream2);
-
-                var compare = CompareBitmaps(bitmap1, bitmap2);
-
-                if (!compare)
+                for (int i = 1; i <= pdfDoc1.Pages.Count; i++)
                 {
-                    return new CompareResult
+                    using var memoryStream1 = pdfDoc1.Pages[i].ConvertToPNGMemoryStream();
+                    using var memoryStream2 = pdfDoc2.Pages[i].ConvertToPNGMemoryStream();
+
+                    pngDevice.Process(pdfDoc1.Pages[i], memoryStream1);
+                    pngDevice.Process(pdfDoc2.Pages[i], memoryStream2);
+
+                    using var bitmap1 = new Bitmap(memoryStream1);
+                    using var bitmap2 = new Bitmap(memoryStream2);
+
+                    var compare = CompareBitmaps(bitmap1, bitmap2);
+
+                    if (!compare)
                     {
-                        Status = "PDF files are not the same",
-                        Same = false
-                    };
+                        return new CompareResult
+                        {
+                            Status = "PDF files are not the same",
+                            Same = false
+                        };
+                    }
                 }
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                return new CompareResult
+                {
+                    Status = "Error",
+                    Same = false
+                };
             }
 
             return new CompareResult
