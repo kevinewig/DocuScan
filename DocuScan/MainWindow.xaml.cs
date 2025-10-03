@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 using System.Windows;
+using System.Windows.Input;
 
 namespace DocuScan
 {
@@ -80,6 +81,14 @@ namespace DocuScan
             }
         }
 
+        private void ResultsGrid_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                ApplicationCommands.Copy.Execute(null, ResultsGrid);
+            }
+        }
+
         private void UpdateResult(CompareResult result)
         {
             try
@@ -144,6 +153,22 @@ namespace DocuScan
             Dir2Button.IsEnabled = enable;
             Dir2TextBox.IsEnabled = enable;
             CompareButton.IsEnabled = enable;
+        }
+
+        private void CopyToClipboard_Click(object sender, RoutedEventArgs e)
+        {
+            if (ResultsGrid.Items.Count == 0)
+                return;
+
+            // Select everything
+            ResultsGrid.SelectAllCells();
+            ResultsGrid.ClipboardCopyMode = System.Windows.Controls.DataGridClipboardCopyMode.IncludeHeader;
+
+            // Force copy to clipboard
+            ApplicationCommands.Copy.Execute(null, ResultsGrid);
+
+            // Clear selection so the grid doesn’t stay highlighted
+            ResultsGrid.UnselectAllCells();
         }
 
     }

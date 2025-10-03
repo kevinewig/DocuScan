@@ -7,23 +7,23 @@ namespace DocuScan.Comparer
     {
         public override CompareResult AreVisuallyEqual(string pdfPath1, string pdfPath2)
         {
-            var pdfDoc1 = new Document(pdfPath1);
-            var pdfDoc2 = new Document(pdfPath2);
-
-            if (pdfDoc1.Pages.Count != pdfDoc2.Pages.Count)
-            {
-                return new CompareResult
-                {
-                    Status = "Page counts differ",
-                    Same = false
-                };
-            }
-
-            Resolution resolution = new Resolution(300);
-            PngDevice pngDevice = new PngDevice(resolution);
-
             try
             {
+                var pdfDoc1 = new Document(pdfPath1);
+                var pdfDoc2 = new Document(pdfPath2);
+
+                if (pdfDoc1.Pages.Count != pdfDoc2.Pages.Count)
+                {
+                    return new CompareResult
+                    {
+                        Status = "Page counts differ",
+                        Same = false
+                    };
+                }
+
+                var resolution = new Resolution(300);
+                var pngDevice = new PngDevice(resolution);
+
                 for (int i = 1; i <= pdfDoc1.Pages.Count; i++)
                 {
                     using var memoryStream1 = pdfDoc1.Pages[i].ConvertToPNGMemoryStream();
@@ -41,26 +41,28 @@ namespace DocuScan.Comparer
                     {
                         return new CompareResult
                         {
-                            Status = "PDF files are not the same",
+                            Status = $"Difference found on page {i}",
                             Same = false
                         };
                     }
                 }
+
+                return new CompareResult
+                {
+                    Status = "PDF files are visually the same",
+                    Same = true
+                };
             }
-            catch (IndexOutOfRangeException ex)
+
+            catch (Exception ex)
             {
                 return new CompareResult
                 {
-                    Status = "Error",
+                    Status = $"Error during comparison: {ex.Message}",
                     Same = false
                 };
             }
 
-            return new CompareResult
-            {
-                Status = "PDF files are visually the same",
-                Same = true
-            };
         }
 
     }

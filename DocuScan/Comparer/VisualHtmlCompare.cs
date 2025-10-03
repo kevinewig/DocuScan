@@ -10,18 +10,18 @@ namespace DocuScan.Comparer
     {
         public override CompareResult AreVisuallyEqual(string htmlPath1, string htmlPath2)
         {
-            // Load HTML documents
-            using var htmlDoc1 = new HTMLDocument(htmlPath1);
-            using var htmlDoc2 = new HTMLDocument(htmlPath2);
-
-            // Render settings
-            var renderOptions = new ImageRenderingOptions(ImageFormat.Png)
-            {
-                PageSetup = { AnyPage = new Page(new Size(1920, 1080)) } // set viewport size
-            };
-
             try
             {
+                // Load HTML documents
+                using var htmlDoc1 = new HTMLDocument(htmlPath1);
+                using var htmlDoc2 = new HTMLDocument(htmlPath2);
+
+                // Render settings
+                var renderOptions = new ImageRenderingOptions(ImageFormat.Png)
+                {
+                    PageSetup = { AnyPage = new Page(new Size(1920, 1080)) }
+                };
+
                 using var ms1 = new MemoryStream();
                 using var ms2 = new MemoryStream();
 
@@ -50,15 +50,16 @@ namespace DocuScan.Comparer
                     Status = compare ? "HTML files are visually the same" : "HTML files differ visually",
                     Same = compare
                 };
-            }
+            } 
             catch (Exception ex)
             {
                 return new CompareResult
                 {
-                    Status = $"Error: {ex.Message}",
+                    Status = $"Error during comparison: {ex.Message}",
                     Same = false
                 };
             }
+
         }
     }
 }
