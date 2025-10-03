@@ -2,7 +2,7 @@
 {
     public abstract class VisualCompare
     {
-        public abstract CompareResult AreVisuallyEqual(string pdfPath1, string pdfPath2);
+        public abstract CompareResult AreVisuallyEqual(string filePath1, string filePath2);
 
         protected bool CompareBitmaps(Bitmap bmp1, Bitmap bmp2)
         {
@@ -17,6 +17,7 @@
                         return false;
                 }
             }
+
             return true;
         }
     }

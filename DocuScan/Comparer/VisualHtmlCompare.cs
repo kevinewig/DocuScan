@@ -26,12 +26,12 @@ namespace DocuScan.Comparer
                 using var ms2 = new MemoryStream();
 
                 // Render HTML to PNG streams
-                using (var device1 = new Aspose.Html.Rendering.Image.ImageDevice(renderOptions, ms1))
+                using (var device1 = new ImageDevice(renderOptions, ms1))
                 {
                     htmlDoc1.RenderTo(device1);
                 }
 
-                using (var device2 = new Aspose.Html.Rendering.Image.ImageDevice(renderOptions, ms2))
+                using (var device2 = new ImageDevice(renderOptions, ms2))
                 {
                     htmlDoc2.RenderTo(device2);
                 }
