@@ -13,59 +13,64 @@ namespace DocuScan.Comparer
             var options = new ParallelOptions
             {
                 CancellationToken = token,
-                MaxDegreeOfParallelism = Environment.ProcessorCount // or customize
+                MaxDegreeOfParallelism = Environment.ProcessorCount
             };
 
+            Parallel.ForEach(allPaths, options, (relPath, state) => {
 
-            Parallel.ForEach(allPaths, options, (relPath, state) => { 
-               
-                if (token.IsCancellationRequested)
-                {
-                    state.Stop(); 
-                }
+                token.ThrowIfCancellationRequested();
 
                 if (!VisualCompareFactory.IsSupportedFileType(relPath))
                 {
                     return;
                 }
 
-                var comparer = VisualCompareFactory.GetVisualCompare(relPath);
-                var path1 = Path.Combine(directory1, relPath);
-                var path2 = Path.Combine(directory2, relPath);
-
-                string status;
-                bool same = false;
-
-                if (File.Exists(path1) && File.Exists(path2))
+                try
                 {
-                    var compareResult = comparer.AreVisuallyEqual(path1, path2);
-                    if (compareResult == null)
+
+                    var comparer = VisualCompareFactory.GetVisualCompare(relPath);
+                    var path1 = Path.Combine(directory1, relPath);
+                    var path2 = Path.Combine(directory2, relPath);
+
+                    string status;
+                    bool same = false;
+
+                    if (File.Exists(path1) && File.Exists(path2))
                     {
-                        status = "Error comparing files";
+                        var compareResult = comparer.AreVisuallyEqual(path1, path2);
+                        if (compareResult == null)
+                        {
+                            status = "Error comparing files";
+                        }
+                        else
+                        {
+                            status = compareResult.Status;
+                            same = compareResult.Same;
+                        }
+                    }
+                    else if (File.Exists(path1))
+                    {
+                        status = "Only in Directory 1";
                     }
                     else
                     {
-                        status = compareResult.Status;
-                        same = compareResult.Same;
+                        status = "Only in Directory 2";
                     }
+
+                    var result = new CompareResult { FileName = relPath, Status = status, Same = same };
+
+                    // Thread-safe UI update
+                    reportResult(result);
+
+                    // Thread-safe progress update
+                    int current = Interlocked.Increment(ref processed);
+                    reportProgress(current, total);
+
                 }
-                else if (File.Exists(path1))
+                catch( ThreadInterruptedException )
                 {
-                    status = "Only in Directory 1";
+                    state.Break();
                 }
-                else
-                {
-                    status = "Only in Directory 2";
-                }
-
-                var result = new CompareResult { FileName = relPath, Status = status, Same = same };
-
-                // Thread-safe UI update
-                reportResult(result);
-
-                // Thread-safe progress update
-                int current = Interlocked.Increment(ref processed);
-                reportProgress(current, total);
 
             });
 

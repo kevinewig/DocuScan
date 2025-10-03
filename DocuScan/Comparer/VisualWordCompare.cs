@@ -47,7 +47,7 @@ namespace DocuScan.Comparer
 
             return new CompareResult
             {
-                Status = "Word files are the same",
+                Status = "Word files are visually the same",
                 Same = true
             };
         }

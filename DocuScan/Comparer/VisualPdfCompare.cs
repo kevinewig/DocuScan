@@ -58,7 +58,7 @@ namespace DocuScan.Comparer
 
             return new CompareResult
             {
-                Status = "PDF files are the same",
+                Status = "PDF files are visually the same",
                 Same = true
             };
         }

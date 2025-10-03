@@ -1,6 +1,7 @@
 ﻿using DocuScan.Comparer;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading;
 using System.Windows;
 
 namespace DocuScan
@@ -11,6 +12,7 @@ namespace DocuScan
         private CancellationTokenSource _cancellationTokenSource;
         private ObservableCollection<CompareResult> _liveResults = new();
         private DateTime _startTime;
+        private Task _compareTask;
 
         public MainWindow()
         {
@@ -45,12 +47,9 @@ namespace DocuScan
             // Disable Compare button
             EnableUI(false);
 
-            // Initialize cancellation token
-            _cancellationTokenSource = new CancellationTokenSource();
-
             // Set progress bar and text
             CompareProgressBar.Value = 0;
-            ProgressText.Text = "0.0%";
+            ProgressText.Text = "Starting...";
 
             // Set the time the comparison started
             _startTime = DateTime.Now;
@@ -61,10 +60,14 @@ namespace DocuScan
 
             try
             {
-                await Task.Run(() =>
+                // Store the task so you can monitor or cancel it later
+                _cancellationTokenSource = new CancellationTokenSource();
+                _compareTask = Task.Run(() =>
                 {
                     _comparer.Compare(dir1, dir2, ReportProgress, UpdateResult, _cancellationTokenSource.Token);
-                });
+                }, _cancellationTokenSource.Token);
+
+                await _compareTask;
             }
             catch (OperationCanceledException)
             {
@@ -72,54 +75,64 @@ namespace DocuScan
             }
             finally
             {
-                EnableUI(true);  
                 _cancellationTokenSource = null;
+                _compareTask = null;
             }
         }
 
         private void UpdateResult(CompareResult result)
         {
-            Dispatcher.Invoke(() =>
+            try
             {
-                if (_cancellationTokenSource.IsCancellationRequested)
+                Dispatcher.Invoke(() =>
                 {
-                    return;
-                }
-                _liveResults.Add(result);
-            });
+                    _liveResults.Add(result);
+                });
+            }
+            catch (ThreadInterruptedException)
+            {
+                return;
+            }
         }
 
         private void ReportProgress(int processed, int total)
         {
-            Dispatcher.Invoke(() =>
+            try
             {
-
-                if (_cancellationTokenSource.IsCancellationRequested)
+                Dispatcher.Invoke(() =>
                 {
-                    return;
-                }
+                    double percent = (double)processed / total * 100;
+                    CompareProgressBar.Value = percent;
 
-                double percent = (double)processed / total * 100;
-                CompareProgressBar.Value = percent;
+                    if (processed > 0)
+                    {
+                        var elapsed = DateTime.Now - _startTime;
+                        double estimatedTotalSeconds = elapsed.TotalSeconds / processed * total;
+                        var remaining = TimeSpan.FromSeconds(estimatedTotalSeconds - elapsed.TotalSeconds);
 
-                if (processed > 0)
-                {
-                    var elapsed = DateTime.Now - _startTime;
-                    double estimatedTotalSeconds = elapsed.TotalSeconds / processed * total;
-                    var remaining = TimeSpan.FromSeconds(estimatedTotalSeconds - elapsed.TotalSeconds);
-
-                    ProgressText.Text = $"complete: {percent:F2}% time left: {remaining.Hours}h {remaining.Minutes}m";
-                }
-                else
-                {
-                    ProgressText.Text = $"complete: {percent:F2}%";
-                }
-            });
+                        ProgressText.Text = $"complete: {percent:F2}% time left: {remaining.Hours}h {remaining.Minutes}m";
+                    }
+                    else
+                    {
+                        ProgressText.Text = $"complete: {percent:F2}%";
+                    }
+                });
+            }
+            catch(ThreadInterruptedException)
+            {
+                return;
+            }
         }
 
+        /// <summary>
+        /// Disabled because stopping is not working properly yet.
+        /// </summary>
         private void StopCompare_Click(object sender, RoutedEventArgs e)
         {
-            _cancellationTokenSource?.Cancel();
+            if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
+            {
+                _cancellationTokenSource.Cancel();
+            }
             ProgressText.Text = "";
             EnableUI(true);
         }
